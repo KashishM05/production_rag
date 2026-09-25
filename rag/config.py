@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import redis as redis_lib
-from openai import AsyncOpenAI
+from langchain_groq import ChatGroq
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sentence_transformers import SentenceTransformer
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
-    openai_api_key: SecretStr
+    groq_api_key: SecretStr
     redis_url: str = "redis://localhost:6379"
-    openai_model: str = "gpt-4o-mini"
-    embedding_model: str = "text-embedding-3-small"
+    groq_model: str = "openai/gpt-oss-120b"
+    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     chunk_size: int = 500
     chunk_overlap: int = 50
     cache_threshold: float = 0.85
@@ -22,7 +23,8 @@ class Settings(BaseSettings):
 
 _settings: Settings | None = None
 _redis: redis_lib.Redis | None = None
-_openai: AsyncOpenAI | None = None
+_embedder: SentenceTransformer | None = None
+_llm: ChatGroq | None = None
 
 
 def get_settings() -> Settings:
@@ -39,8 +41,21 @@ def get_redis() -> redis_lib.Redis:
     return _redis
 
 
-def get_openai() -> AsyncOpenAI:
-    global _openai
-    if _openai is None:
-        _openai = AsyncOpenAI(api_key=get_settings().openai_api_key.get_secret_value())
-    return _openai
+def get_embedder() -> SentenceTransformer:
+    """Local HuggingFace model — downloaded once, then runs on this machine (no API key)."""
+    global _embedder
+    if _embedder is None:
+        _embedder = SentenceTransformer(get_settings().embedding_model)
+    return _embedder
+
+
+def get_llm() -> ChatGroq:
+    global _llm
+    if _llm is None:
+        s = get_settings()
+        _llm = ChatGroq(
+            model=s.groq_model,
+            api_key=s.groq_api_key,
+            max_tokens=512,
+        )
+    return _llm

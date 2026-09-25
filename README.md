@@ -24,7 +24,7 @@ A minimal **FastAPI RAG application** that generates real Redis keys so BetterDB
 ```
 production_rag/
 ├── rag/
-│   ├── config.py       ← pydantic-settings + Redis + OpenAI clients
+│   ├── config.py       ← pydantic-settings + Redis + Groq (LLM) + local HuggingFace (embeddings)
 │   ├── pipeline.py     ← ingest, retrieve, semantic cache, rate limit, session
 │   └── main.py         ← FastAPI: POST /ingest  POST /query  GET /stats  GET /health
 ├── docker-compose.yml  ← local Valkey (alternative to Upstash)
@@ -53,14 +53,14 @@ production_rag/
 
 ```bash
 uv venv --python 3.12 && source .venv/bin/activate
-uv pip install fastapi uvicorn pypdf numpy pydantic-settings python-multipart openai redis python-dotenv
+uv pip install fastapi uvicorn pypdf numpy pydantic-settings python-multipart langchain-groq sentence-transformers redis python-dotenv
 ```
 
 ### 2. Configure .env
 
 ```bash
 cp .env.example .env
-# Fill in: OPENAI_API_KEY, REDIS_URL, BETTERDB_TOKEN
+# Fill in: GROQ_API_KEY, REDIS_URL, BETTERDB_TOKEN
 ```
 
 **Option A — Upstash Redis (cloud, zero infra):**
@@ -200,8 +200,8 @@ See **[step-by-step.md](step-by-step.md)** for:
 | Component | Choice |
 |---|---|
 | API | FastAPI 0.120 |
-| LLM | OpenAI gpt-4o-mini |
-| Embeddings | text-embedding-3-small |
+| LLM | Groq openai/gpt-oss-120b (via `langchain_groq.ChatGroq`) |
+| Embeddings | sentence-transformers/all-MiniLM-L6-v2 (local, 384-dim) |
 | Redis (cloud) | Upstash Redis |
 | Redis (local) | Valkey 8.1 (Docker) |
 | Observability | BetterDB cloud + agent |

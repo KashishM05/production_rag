@@ -7,12 +7,12 @@ Complete walkthrough for the FastAPI RAG application demo covering all 5 BetterD
 ## Architecture
 
 ```
-PDF Upload → FastAPI (/ingest) → OpenAI Embeddings → Redis (Upstash OR local Valkey)
+PDF Upload → FastAPI (/ingest) → Local HF Embeddings → Redis (Upstash OR local Valkey)
                                                               ↓
 User Query → FastAPI (/query) → Rate Limit Check    rag:doc:{sha256}
                               → Semantic Cache Check semantic_cache:{md5}
                               → HGETALL Retrieval   rate_limit:user_{id}:*
-                              → OpenAI LLM          langchain:memory:session:{id}
+                              → Groq LLM            langchain:memory:session:{id}
                               → Cache Store
                               → Session Write
                                    ↓
@@ -39,7 +39,7 @@ User Query → FastAPI (/query) → Rate Limit Check    rag:doc:{sha256}
 |---|---|---|
 | Python | 3.12+ | Required |
 | Docker | any | Required (BetterDB agent) |
-| OpenAI API Key | — | Required |
+| Groq API Key | — | Required (LLM) |
 | Upstash Redis | free tier | Required |
 | BetterDB Cloud | free | Required |
 
@@ -51,7 +51,7 @@ User Query → FastAPI (/query) → Rate Limit Check    rag:doc:{sha256}
 
 ```bash
 cd /path/to/betterdb-yt-collab
-uv pip install fastapi uvicorn pypdf numpy pydantic-settings python-multipart openai redis python-dotenv
+uv pip install fastapi uvicorn pypdf numpy pydantic-settings python-multipart langchain-groq sentence-transformers redis python-dotenv
 ```
 
 ### 1.2 Configure .env
@@ -61,8 +61,8 @@ uv pip install fastapi uvicorn pypdf numpy pydantic-settings python-multipart op
 BETTERDB_URL=https://betterdb-test1.app.betterdb.com
 BETTERDB_TOKEN=<your_betterdb_token>
 
-# OpenAI
-OPENAI_API_KEY=sk-...
+# Groq (LLM)
+GROQ_API_KEY=gsk_...
 
 # ── OPTION A: Upstash Redis (cloud, zero infra) ───────────────────────────────
 # TCP URL with TLS — note double-s in rediss://
@@ -533,9 +533,9 @@ Note the `latency_ms` field — most of it is Redis HGETALL, not LLM generation.
 ### Step 3: The RAG pipeline waterfall
 
 ```
-Embedding call:     ~300ms  (OpenAI API)
+Embedding call:     ~20ms   (local all-MiniLM-L6-v2)
 Redis scan+HGETALL: ~6000ms ← BOTTLENECK (21 keys × 264ms)
-LLM generation:     ~1200ms (OpenAI API)
+LLM generation:     ~1200ms (Groq API)
 ────────────────────────────
 Total:              ~7500ms
 ```
