@@ -1,0 +1,34 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+package-lock.json
+
+# Jupyter (not used in current setup)
+*.ipynb
+.jupyter/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Secrets / PDFs
+BetterDB_YouTube_Proposal.pdf
+
+# Claude Code
+.claude/*
+scripts/*
+BetterDB.md

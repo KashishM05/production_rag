@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  valkey:
+    image: valkey/valkey:8.1-alpine
+    container_name: betterdb-demo-valkey
+    ports:
+      - "6379:6379"
+    command: >
+      valkey-server
+      --slowlog-log-slower-than 100
+      --slowlog-max-len 10000
+      --loglevel warning
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  valkey_data:
+
+# Usage:
+#   docker-compose up -d        → start Valkey
+#   docker-compose ps           → check health
+#   docker-compose logs valkey  → logs
+#   docker-compose down         → stop + clean
+#
+# After Valkey is up, run BetterDB self-hosted:
+#   npx @betterdb/monitor
+#   → interactive wizard, connect to localhost:6379
+#   → dashboard at http://localhost:3001

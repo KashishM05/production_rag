@@ -1,0 +1,36 @@
+[project]
+name = "betterdb-yt-collab"
+version = "0.1.0"
+description = "BetterDB x Krish Naik — AI Infrastructure Observability Demo"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "valkey>=6.1.1",
+    "redis>=7.4.0",
+    "httpx>=0.28.1",
+    "pandas>=3.0.2",
+    "plotly>=6.7.0",
+    "python-dotenv>=1.2.2",
+    "rich>=15.0.0",
+    "openai>=2.33.0",
+    "jupyterlab>=4.0.0",
+    "notebook>=7.0.0",
+    "ipykernel>=6.29.0",
+    "nbformat>=5.10.0",
+    "ipywidgets>=8.1.0",
+    "fastapi>=0.120.0",
+    "uvicorn[standard]>=0.34.0",
+    "pypdf>=5.0.0",
+    "numpy>=1.26.0",
+    "pydantic-settings>=2.8.0",
+    "python-multipart>=0.0.9",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
