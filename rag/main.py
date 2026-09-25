@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from .config import get_redis, get_settings
 from .pipeline import ingest_pdf, query_rag
 
-app = FastAPI(title="BetterDB RAG Demo", version="1.0.0")
+app = FastAPI(title="Production RAG", version="1.0.0")
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
